@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#141124" />
+  <meta name="description" content="ФЕНЁК — аниме-история о подростке, строгих родителях и одном выборе, который меняет всё. 2D визуальная новелла с семью концовками." />
+  <title>ФЕНЁК — история одного выбора</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%23141124'/><path d='M13 52 C10 30 16 12 22 10 C28 20 27 32 30 36 C33 31 32 18 36 10 C46 16 52 32 50 52 Z' fill='%23edc48c'/><path d='M24 42 q8 6 16 0' fill='none' stroke='%234c3436' stroke-width='3' stroke-linecap='round'/><circle cx='25' cy='30' r='3' fill='%234c3436'/><circle cx='39' cy='30' r='3' fill='%234c3436'/></svg>" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ================= ТИТУЛЬНЫЙ ЭКРАН ================= -->
+  <section id="screen-title" class="screen title-screen">
+    <div class="title-art" id="title-art" aria-hidden="true"></div>
+    <div class="title-veil" aria-hidden="true"></div>
+    <div class="title-content">
+      <p class="eyebrow title-eyebrow"><span class="rule"></span>интерактивная история<span class="rule"></span></p>
+      <h1 class="title-logo" aria-label="Фенёк">ФЕНЁК</h1>
+      <p class="title-jp">フェネック <span>·</span> история одного выбора</p>
+      <p class="title-lead">
+        Один вечер. Один двор.<br />
+        Одно существо, которое смотрит на тебя так,<br class="wide-only" />
+        будто ты — целый мир.
+      </p>
+      <div class="title-buttons">
+        <button id="btn-new" class="btn btn-primary"><span class="btn-arrow">▸</span> Новая история</button>
+        <button id="btn-continue" class="btn btn-ghost hidden"><span class="save-dot"></span> Продолжить</button>
+        <button id="btn-gallery" class="btn btn-ghost">Концовки <span id="gallery-count" class="btn-count">0/7</span></button>
+      </div>
+      <p class="title-meta">2D <span class="dot">·</span> 7 концовок <span class="dot">·</span> 20–30 минут <span class="dot">·</span> автосохранение</p>
+    </div>
+    <div class="title-footer">
+      <span>каждый выбор оставляет след</span>
+      <span class="title-controls">клик · пробел · 1–4</span>
+    </div>
+  </section>
+
+  <!-- ================= СОЗДАНИЕ ПЕРСОНАЖА ================= -->
+  <section id="screen-creator" class="screen creator hidden">
+    <div class="creator-bg" id="creator-bg" aria-hidden="true"></div>
+    <div class="creator-shell">
+      <button id="creator-back" class="back-btn" type="button">← Назад</button>
+      <div class="creator-grid">
+        <div class="creator-preview">
+          <div class="preview-halo" aria-hidden="true"></div>
+          <div class="preview-card">
+            <div id="preview-portrait" class="preview-portrait"></div>
+            <div class="preview-plate">
+              <span id="preview-name">Алекс</span>
+              <span id="preview-dream">архитектура</span>
+            </div>
+          </div>
+          <p class="preview-hint">Так тебя увидят в истории</p>
+        </div>
+
+        <div class="creator-form">
+          <p class="eyebrow">создание персонажа</p>
+          <h2 class="creator-title">Кто ты?</h2>
+          <p class="creator-lead">Собери себя. Внешность — как захочешь. Имя и мечта останутся с тобой до конца.</p>
+
+          <div class="field">
+            <label class="field-label" for="name-input">Имя</label>
+            <div class="name-row">
+              <input id="name-input" class="name-input" type="text" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Как тебя зовут?" value="Алекс" />
+              <button id="name-dice" class="dice-btn" type="button" aria-label="Случайное имя" title="Случайное имя">✦</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="field-label-row">
+              <span class="field-label">О тебе в тексте</span>
+              <span class="field-note">влияет на слова</span>
+            </div>
+            <div class="segmented" id="gender-group" role="group" aria-label="Форма обращения">
+              <button type="button" data-gender="m" class="seg active">он</button>
+              <button type="button" data-gender="f" class="seg">она</button>
+            </div>
+          </div>
+
+          <div class="field-grid">
+            <div class="field">
+              <span class="field-label">Кожа</span>
+              <div class="swatches" id="skin-swatches" role="group" aria-label="Цвет кожи"></div>
+            </div>
+            <div class="field">
+              <span class="field-label">Глаза</span>
+              <div class="swatches" id="eye-swatches" role="group" aria-label="Цвет глаз"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Волосы</span>
+            <div class="swatches" id="hair-swatches" role="group" aria-label="Цвет волос"></div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Причёска</span>
+            <div class="chips" id="hairstyle-group" role="group" aria-label="Причёска">
+              <button type="button" class="chip active" data-hair="short">Короткие</button>
+              <button type="button" class="chip" data-hair="bob">Каре</button>
+              <button type="button" class="chip" data-hair="curls">Кудри</button>
+              <button type="button" class="chip" data-hair="pony">Хвост</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">Одежда</span>
+            <div class="swatches" id="shirt-swatches" role="group" aria-label="Цвет одежды"></div>
+          </div>
+
+          <div class="field dream-field">
+            <div class="field-label-row">
+              <span class="field-label">Твоя мечта</span>
+              <span class="field-note">мама выберет другое</span>
+            </div>
+            <div class="dream-grid" id="dream-cards"></div>
+          </div>
+
+          <div class="creator-actions">
+            <button id="start-btn" class="btn btn-primary btn-wide" type="button">Начать историю <span class="btn-arrow">▸</span></button>
+            <p class="creator-note">Твой выбор — единственное, что нельзя отменить.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ИГРА ================= -->
+  <section id="screen-game" class="screen game hidden">
+    <div class="bg-stack" aria-hidden="true">
+      <div class="bg-layer" id="bg-a"></div>
+      <div class="bg-layer" id="bg-b"></div>
+    </div>
+    <div class="scene-tint" aria-hidden="true"></div>
+    <div class="scene-bloom" aria-hidden="true"></div>
+
+    <header id="hud" class="hud">
+      <div class="hud-left">
+        <button id="menu-btn" class="icon-btn" type="button" aria-label="Меню" title="Меню">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+        </button>
+        <div class="chapter-chip">
+          <span id="hud-chapter" class="chapter-label">Глава 1</span>
+          <strong id="hud-chapter-title">Свой угол</strong>
+          <span id="hud-location" class="location-label">Квартира · твоя комната</span>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div id="stats" class="stats" aria-label="Характеристики"></div>
+        <button id="btn-look" class="hud-btn look-btn" type="button" title="Осмотреться">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+          <span>осмотреться</span>
+        </button>
+        <button id="btn-journal" class="hud-btn" type="button" aria-label="Журнал" title="Журнал">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M8 4v16M11 8h5M11 12h5"/></svg>
+        </button>
+        <button id="sound-btn" class="icon-btn sound-btn" type="button" aria-label="Звук" title="Звук">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path class="spk" d="M4 9h3.5L12 5v14l-4.5-4H4z"/><path class="wave" d="M15 9.2c1.1 1.5 1.1 4.1 0 5.6M17.6 6.8c2.3 2.8 2.3 7.6 0 10.4"/><path class="slash" d="M4 4l16 16"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="objective" class="objective"><span class="objective-dot"></span><span id="objective-text"></span></div>
+
+    <div id="portraits" class="portraits" aria-hidden="true"></div>
+
+    <div id="story-ui" class="story-ui">
+      <div id="choices" class="choices" role="group" aria-label="Выбор"></div>
+
+      <div id="dialogue" class="dialogue">
+        <div class="dialogue-head">
+          <span id="speaker" class="speaker"></span>
+          <span id="dialogue-hint" class="dialogue-hint">клик / пробел <b>▸</b></span>
+        </div>
+        <p id="dialogue-text" class="dialogue-text"></p>
+        <span id="next-hint" class="next-hint" aria-hidden="true">▾</span>
+      </div>
+    </div>
+
+    <!-- Осмотреться -->
+    <aside id="look-panel" class="side-panel hidden" aria-label="Осмотреться">
+      <button class="panel-close" data-close="look-panel" type="button" aria-label="Закрыть">×</button>
+      <p class="eyebrow">осмотреться</p>
+      <h3>Мелочи, которые важнее</h3>
+      <div id="look-list" class="look-list"></div>
+      <div id="memory-card" class="memory-card hidden">
+        <p class="memory-title" id="memory-title"></p>
+        <div id="memory-body" class="memory-body"></div>
+        <div class="memory-actions"><button id="memory-close" class="btn btn-small" type="button">Закрыть</button></div>
+      </div>
+    </aside>
+
+    <!-- Журнал -->
+    <aside id="journal-panel" class="side-panel journal-panel hidden" aria-label="Журнал">
+      <button class="panel-close" data-close="journal-panel" type="button" aria-label="Закрыть">×</button>
+      <p class="eyebrow">журнал</p>
+      <h3>Что уже случилось</h3>
+      <div id="journal-list" class="journal-list"></div>
+    </aside>
+
+    <!-- Пауза -->
+    <div id="pause" class="modal hidden" role="dialog" aria-modal="true" aria-label="Меню">
+      <div class="modal-card pause-card">
+        <p class="eyebrow">пауза</p>
+        <h3>Ты можешь выдохнуть</h3>
+        <div class="pause-stats" id="pause-stats"></div>
+        <div class="pause-actions">
+          <button id="pause-resume" class="btn btn-primary" type="button">Продолжить</button>
+          <button id="pause-journal" class="btn btn-ghost" type="button">Журнал</button>
+          <button id="pause-sound" class="btn btn-ghost" type="button">Звук: вкл</button>
+          <button id="pause-restart" class="btn btn-ghost" type="button">Начать заново</button>
+          <button id="pause-menu" class="btn btn-ghost" type="button">В главное меню</button>
+          <button id="pause-close" class="btn btn-ghost btn-small" type="button">Закрыть</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Монтаж недели -->
+    <div id="montage" class="montage hidden" role="dialog" aria-modal="true" aria-label="Три вечера">
+      <div class="montage-card">
+        <div class="montage-head">
+          <div>
+            <p class="eyebrow">три вечера</p>
+            <h3 id="montage-title">Три вечера перед экзаменом</h3>
+            <p id="montage-hint" class="montage-hint"></p>
+          </div>
+          <div class="montage-counter"><span id="montage-count">0</span> / 3</div>
+        </div>
+        <div class="montage-progress"><span id="montage-fill"></span></div>
+        <div id="montage-options" class="montage-options"></div>
+        <div id="montage-log" class="montage-log" aria-live="polite"></div>
+        <div class="montage-actions">
+          <button id="montage-confirm" class="btn btn-primary" type="button" disabled>Прожить неделю <span class="btn-arrow">▸</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="chapter-card" class="chapter-card hidden" aria-hidden="true">
+      <div class="chapter-inner">
+        <p class="chapter-kicker">глава <span id="cc-number">1</span></p>
+        <h2 id="cc-title">Свой угол</h2>
+        <p id="cc-sub">Дом. Вечер. Всё как всегда.</p>
+        <div class="chapter-rule"></div>
+        <p id="cc-location" class="chapter-location"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= КОНЦОВКА ================= -->
+  <section id="screen-ending" class="screen ending-screen hidden">
+    <div class="ending-art" id="ending-art" aria-hidden="true"></div>
+    <div class="ending-veil" aria-hidden="true"></div>
+    <div class="ending-scroll">
+      <div class="ending-top">
+        <span class="ending-kicker">концовка <span id="ending-number">1</span> из 7</span>
+        <span id="ending-mood" class="ending-mood">тёплая</span>
+      </div>
+      <h2 id="ending-title" class="ending-title">Тот самый университет</h2>
+      <p id="ending-tag" class="ending-tag">твой выбор · твой дом</p>
+      <div class="ending-rule"></div>
+      <div id="ending-body" class="ending-body"></div>
+      <div class="ending-meta">
+        <div>
+          <span class="ending-meta-label">твоя мечта</span>
+          <span id="ending-dream" class="ending-meta-value">архитектура</span>
+        </div>
+        <div>
+          <span class="ending-meta-label">имя фенека</span>
+          <span id="ending-pet" class="ending-meta-value">—</span>
+        </div>
+      </div>
+      <div class="ending-stats-wrap">
+        <span class="ending-meta-label">чем запомнилась эта жизнь</span>
+        <div id="ending-stats" class="ending-stats"></div>
+      </div>
+      <div class="ending-actions">
+        <button id="ending-again" class="btn btn-primary" type="button">Ещё одна жизнь <span class="btn-arrow">▸</span></button>
+        <button id="ending-gallery" class="btn btn-ghost" type="button">Галерея концовок</button>
+        <button id="ending-menu" class="btn btn-ghost" type="button">В главное меню</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ГАЛЕРЕЯ ================= -->
+  <section id="screen-gallery" class="screen gallery hidden">
+    <div class="gallery-art" id="gallery-art" aria-hidden="true"></div>
+    <div class="gallery-shell">
+      <div class="gallery-head">
+        <button id="gallery-back" class="back-btn" type="button">← Назад</button>
+        <div>
+          <p class="eyebrow">все пути</p>
+          <h2>Галерея концовок</h2>
+        </div>
+        <div id="gallery-progress" class="gallery-progress">0 / 7</div>
+      </div>
+      <p class="gallery-lead">Каждый выбор оставляет след. Некоторые двери открываются только со второго раза.</p>
+      <div id="gallery-grid" class="gallery-grid"></div>
+    </div>
+    <div id="gallery-detail" class="modal hidden" role="dialog" aria-modal="true" aria-label="Концовка">
+      <div class="modal-card gallery-detail-card">
+        <button id="gallery-detail-close" class="panel-close" type="button" aria-label="Закрыть">×</button>
+        <p class="eyebrow" id="gd-kicker">концовка</p>
+        <h3 id="gd-title"></h3>
+        <p id="gd-tag" class="gd-tag"></p>
+        <div id="gd-body" class="gd-body"></div>
+        <button id="gd-back" class="btn btn-small" type="button">К галерее</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script src="./js/story.js"></script>
+  <script src="./js/audio.js"></script>
+  <script src="./js/art2d.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
